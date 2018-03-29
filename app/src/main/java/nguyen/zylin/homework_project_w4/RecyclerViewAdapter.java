@@ -12,9 +12,10 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import org.parceler.Parcels;
+
 import java.util.List;
 
-import nguyen.zylin.homework_project_w4.Model.ItemClickListener;
 import nguyen.zylin.homework_project_w4.Model.ResultModel;
 
 /**
@@ -25,7 +26,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
     private Context context;
     private List<ResultModel> resultModelList;
-    private ItemClickListener clickListener;
 
     public RecyclerViewAdapter(Context context, List<ResultModel> resultModelList) {
         this.context = context;
@@ -36,10 +36,10 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         return context;
     }
 
-    public void setClickListener(ItemClickListener itemClickListener) {
-
-        this.clickListener = itemClickListener;
-    }
+//    public void setClickListener(ItemClickListener itemClickListener) {
+//
+//        this.clickListener = itemClickListener;
+//    }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -56,7 +56,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
-        ResultModel resultModel = resultModelList.get(position);
+        final ResultModel resultModel = resultModelList.get(position);
 
         Picasso.with(context).load("https://image.tmdb.org/t/p/w500/"+resultModel.getPosterPath()).into(holder.moviePoster);
         holder.movieName.setText(resultModel.getTitle());
@@ -67,6 +67,15 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             holder.btnPlay.setVisibility(View.GONE);
         }
 
+        holder.container.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context, DetailsActivity.class);
+                intent.putExtra("result", Parcels.wrap(resultModel));
+                context.startActivity(intent);
+            }
+        });
+
     }
 
     @Override
@@ -74,24 +83,24 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         return resultModelList == null ? 0 : resultModelList.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    public class ViewHolder extends RecyclerView.ViewHolder{
 
         TextView movieName, movieDescription;
         ImageView moviePoster, btnPlay;
+        RelativeLayout container;
 
         public ViewHolder(View itemView) {
             super(itemView);
+            container = itemView.findViewById(R.id.recycler_view_layout);
             movieName = itemView.findViewById(R.id.tv_movie_name);
             movieDescription = itemView.findViewById(R.id.tv_movie_description);
             moviePoster = itemView.findViewById(R.id.imgv_movie_poster);
             btnPlay = itemView.findViewById(R.id.play_btn);
-
-            itemView.setOnClickListener(this);
         }
 
-        @Override
-        public void onClick(View v) {
-            clickListener.onItemClick(v,getAdapterPosition());
-        }
+//        @Override
+//        public void onClick(View v) {
+//            clickListener.onItemClick(v,getAdapterPosition());
+//        }
     }
 }
