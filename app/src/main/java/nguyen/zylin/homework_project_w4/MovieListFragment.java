@@ -3,6 +3,7 @@ package nguyen.zylin.homework_project_w4;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -30,6 +31,8 @@ public class MovieListFragment extends Fragment{
     public static final String ARG_PAGE = "ARG_PAGE";
     private int mPage;
     private static String url;
+    private SwipeRefreshLayout swipeContainer;
+
 
     Gson gson = new Gson();
     List<ResultModel> resultModelList = new ArrayList<>();
@@ -63,6 +66,8 @@ public class MovieListFragment extends Fragment{
         recyclerViewAdapter = new RecyclerViewAdapter(getActivity(), resultModelList);
         recyclerView.setAdapter(recyclerViewAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        // Lookup the swipe container view
+        swipeContainer = view.findViewById(R.id.swipeContainer);
 
         if (mPage == 1) {
             url = "https://api.themoviedb.org/3/movie/now_playing?api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed";
@@ -77,12 +82,43 @@ public class MovieListFragment extends Fragment{
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        getData();
+
+
+        // Setup refresh listener which triggers new data loading
+        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                // Your code to refresh the list here.
+                // Make sure you call swipeContainer.setRefreshing(false)
+                // once the network request has completed successfully.
+                getData();
+            }
+        });
+        // Configure the refreshing colors
+        swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light);
+
+
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+    }
+
+
+    public void getData() {
+        swipeContainer.setRefreshing(true);
         OkHttpClient okHttpClient = new OkHttpClient();
         final Request request = new Request.Builder().url(url).build();
         okHttpClient.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
+                swipeContainer.setRefreshing(false);
             }
 
             @Override
@@ -99,16 +135,12 @@ public class MovieListFragment extends Fragment{
                         @Override
                         public void run() {
                             recyclerViewAdapter.notifyDataSetChanged();
+                            swipeContainer.setRefreshing(false);
                         }
                     });
                 }
             }
         });
-
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-    }
 }

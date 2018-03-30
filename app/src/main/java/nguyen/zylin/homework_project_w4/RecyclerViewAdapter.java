@@ -103,4 +103,16 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 //            clickListener.onItemClick(v,getAdapterPosition());
 //        }
     }
+
+    // Clean all elements of the recycler
+    public void clear() {
+        resultModelList.clear();
+        notifyDataSetChanged();
+    }
+
+    // Add a list of items -- change to type used
+    public void addAll(List<ResultModel> list) {
+        resultModelList.addAll(list);
+        notifyDataSetChanged();
+    }
 }
